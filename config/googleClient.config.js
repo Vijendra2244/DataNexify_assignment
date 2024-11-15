@@ -5,7 +5,7 @@ dotenv.config();
 const OAUTHCLIENT = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
-  "http://localhost:4040/auth/google/callback"
+  "https://datanexify-assignment.onrender.com/auth/google/callback"
 );
 
 module.exports = {
