@@ -53,12 +53,11 @@ googleOAuthRoutes.get("/google/callback", async (req, res) => {
         googleId: data.id,
         accessToken: tokens.access_token,
         refreshToken: tokens.refresh_token,
-        email: data.email,
       });
       await user.save();
     }
-
-    res.redirect("http://localhost:5173");
+    console.log("after saving the user", user);
+    res.redirect("https://datanexify-assignment.onrender.com/");
   } catch (error) {
     res.status(500).send({
       msg: "Fail",
