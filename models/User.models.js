@@ -7,13 +7,10 @@ const UserSchema = mongoose.Schema({
   },
   accessToken: {
     type: String,
-    required: true,
   },
   refreshToken: {
     type: String,
-    required: true,
   },
-
 });
 
 const User = mongoose.model("User", UserSchema);
