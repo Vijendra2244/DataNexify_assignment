@@ -59,6 +59,8 @@ googleOAuthRoutes.get("/google/callback", async (req, res) => {
     console.log("after saving the user", user);
     res.redirect("https://datanexify-assignment.onrender.com/");
   } catch (error) {
+    console.error("Authentication error:", error.response?.data || error);
+    console.log(error.response?.data || error.message)
     res.status(500).send({
       msg: "Fail",
       data: "Authetication failed via Google Oauth2",
