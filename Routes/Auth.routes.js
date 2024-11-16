@@ -54,7 +54,7 @@ googleOAuthRoutes.get("/google/callback", async (req, res) => {
       user = new User({
         googleId: data.id,
         accessToken: tokens.access_token,
-        refreshToken: tokens.refresh_token,
+        refreshToken: tokens.refresh_token || "",
       });
     } else {
       user.accessToken = tokens.access_token;
@@ -64,7 +64,7 @@ googleOAuthRoutes.get("/google/callback", async (req, res) => {
     }
     await user.save();
     console.log("after saving the user", user);
-    res.redirect("http://localhost:5173/dashboard");
+    res.redirect(`http://localhost:5173/dashboard?code=${code}`);
   } catch (error) {
     console.error("Authentication error:", error.response?.data || error);
     console.log(error.response?.data || error.message);
