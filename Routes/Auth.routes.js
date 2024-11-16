@@ -75,6 +75,61 @@ googleOAuthRoutes.get("/google/callback", async (req, res) => {
   }
 });
 
+//route for getting the use info
+
+googleOAuthRoutes.get("/auth/google/fetch-user", async (req, res) => {
+  try {
+    const { code } = req.query; // Authorization code received after login
+    if (!code) {
+      return res
+        .status(400)
+        .send({ success: false, message: "Authorization code is required" });
+    }
+
+    console.log("Authorization code received:", code);
+
+    // Exchange code for tokens
+    const { tokens } = await OAUTHCLIENT.getToken(code);
+    OAUTHCLIENT.setCredentials(tokens);
+
+    // Use OAuth2 API to fetch user info
+    const oauth2 = google.oauth2({ version: "v2", auth: OAUTHCLIENT });
+    const { data: userInfo } = await oauth2.userinfo.get();
+
+    console.log("User info retrieved:", userInfo);
+
+    // Save or update the user in the database
+    let user = await User.findOne({ googleId: userInfo.id });
+    if (!user) {
+      user = new User({
+        googleId: userInfo.id,
+        email: userInfo.email,
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token || "",
+      });
+    } else {
+      user.accessToken = tokens.access_token;
+      if (tokens.refresh_token) {
+        user.refreshToken = tokens.refresh_token;
+      }
+    }
+    await user.save();
+
+    // Respond with the user data
+    res.status(200).send({ success: true, user: userInfo, tokens });
+  } catch (error) {
+    console.error(
+      "Error fetching user info:",
+      error.response?.data || error.message
+    );
+    res.status(500).send({
+      success: false,
+      message: "Failed to fetch user info",
+      error: error.response?.data || error.message,
+    });
+  }
+});
+
 module.exports = {
   googleOAuthRoutes,
 };
