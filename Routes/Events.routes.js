@@ -81,7 +81,7 @@ googleEventsRoutes.get("/users/get", async (req, res) => {
     try {
       const eventsResponse = await calendar.events.list({
         calendarId: "primary",
-
+        maxResults: 100,
         orderBy: "startTime",
         singleEvents: true,
       });
@@ -112,14 +112,14 @@ googleEventsRoutes.get("/users/get", async (req, res) => {
 
         const retryEventsResponse = await calendar.events.list({
           calendarId: "primary",
-          maxResults: 10,
+          maxResults: 100,
           orderBy: "startTime",
           singleEvents: true,
         });
-
+        const sortedEvents = retryEventsResponse.data.items.reverse();
         return res.status(200).send({
           msg: "Success",
-          events: retryEventsResponse.data.items,
+          events:sortedEvents,
         });
       } else {
         console.error(
