@@ -2,6 +2,7 @@ const express = require("express");
 const { OAUTHCLIENT } = require("../config/googleClient.config");
 const { User } = require("../models/User.models");
 const { google } = require("googleapis");
+const moment = require("moment");
 
 const googleEventsRoutes = express.Router();
 
@@ -77,11 +78,16 @@ googleEventsRoutes.get("/users/get", async (req, res) => {
     });
 
     const calendar = google.calendar({ version: "v3", auth: OAUTHCLIENT });
+    const currentDate = moment().toISOString(); // Get current date
+    const oneMonthAgo = moment().subtract(1, "months").toISOString();
 
     try {
       const eventsResponse = await calendar.events.list({
         calendarId: "primary",
-        maxResults: 100,
+        timeMin: oneMonthAgo, // Start of the range
+        timeMax: currentDate, // End of the range
+        maxResults: 100, // You can adjust this number
+        orderBy: "startTime", // Ensure events are sorted by date
         singleEvents: true,
       });
       const sortedEvents = eventsResponse.data.items.reverse();
@@ -111,13 +117,16 @@ googleEventsRoutes.get("/users/get", async (req, res) => {
 
         const retryEventsResponse = await calendar.events.list({
           calendarId: "primary",
-          maxResults: 100,
+          timeMin: oneMonthAgo, // Start of the range
+          timeMax: currentDate, // End of the range
+          maxResults: 100, // You can adjust this number
+          orderBy: "startTime", // Ensure events are sorted by date
           singleEvents: true,
         });
         const sortedEvents = retryEventsResponse.data.items.reverse();
         return res.status(200).send({
           msg: "Success",
-          events:sortedEvents,
+          events: sortedEvents,
         });
       } else {
         console.error(
