@@ -81,7 +81,7 @@ googleEventsRoutes.get("/users/get", async (req, res) => {
     try {
       const eventsResponse = await calendar.events.list({
         calendarId: "primary",
-        maxResults: 10,
+        maxResults: 100,
         orderBy: "startTime",
         singleEvents: true,
       });
