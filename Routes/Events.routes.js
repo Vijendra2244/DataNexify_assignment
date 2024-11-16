@@ -150,68 +150,6 @@ googleEventsRoutes.get("/users/get", async (req, res) => {
   }
 });
 
-googleEventsRoutes.post("/sendInvitation", async (req, res) => {
-  try {
-    const { googleId, eventId, attendees } = req.body;
-    if (!googleId || !eventId || !attendees || attendees.length === 0) {
-      return res.status(400).send({
-        msg: "Fail",
-        data: "Google ID, Event ID, and Attendees are required",
-      });
-    }
-
-    const user = await User.findOne({ googleId });
-    if (!user) {
-      return res.status(404).send({
-        msg: "Fail",
-        data: "User not found with this Google ID",
-      });
-    }
-
-     OAUTHCLIENT.setCredentials({
-      access_token: user.accessToken,
-      refresh_token: user.refreshToken,
-    });
-
-    const calendar = google.calendar({ version: "v3", auth: OAUTHCLIENT });
-
-    // Get the current event details
-    const event = await calendar.events.get({
-      calendarId: "primary",
-      eventId: eventId,
-    });
-
-    // Add attendees to the event
-    const updatedEvent = {
-      ...event.data,
-      attendees: [
-        ...event.data.attendees,
-        ...attendees.map((email) => ({ email }))
-      ],
-    };
-
-    // Update the event with attendees
-    const updatedEventResponse = await calendar.events.update({
-      calendarId: "primary",
-      eventId: eventId,
-      resource: updatedEvent,
-    });
-
-    return res.status(200).send({
-      msg: "Success",
-      event: updatedEventResponse.data, // Return the updated event details
-    });
-  } catch (error) {
-    console.error("Error sending invitation:", error.message);
-    return res.status(500).send({
-      msg: "Fail",
-      data: "Failed to send invitation",
-      error: error.message,
-    });
-  }
-});
-
-
 module.exports = {
   googleEventsRoutes,
 };
