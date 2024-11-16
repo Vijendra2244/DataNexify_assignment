@@ -82,7 +82,6 @@ googleEventsRoutes.get("/users/get", async (req, res) => {
       const eventsResponse = await calendar.events.list({
         calendarId: "primary",
         maxResults: 100,
-        orderBy: "startTime",
         singleEvents: true,
       });
       const sortedEvents = eventsResponse.data.items.reverse();
@@ -113,7 +112,6 @@ googleEventsRoutes.get("/users/get", async (req, res) => {
         const retryEventsResponse = await calendar.events.list({
           calendarId: "primary",
           maxResults: 100,
-          orderBy: "startTime",
           singleEvents: true,
         });
         const sortedEvents = retryEventsResponse.data.items.reverse();
