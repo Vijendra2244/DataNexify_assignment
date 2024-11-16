@@ -81,14 +81,14 @@ googleEventsRoutes.get("/users/get", async (req, res) => {
     try {
       const eventsResponse = await calendar.events.list({
         calendarId: "primary",
-        maxResults: 100,
+
         orderBy: "startTime",
         singleEvents: true,
       });
-
+      const sortedEvents = eventsResponse.data.items.reverse();
       return res.status(200).send({
         msg: "Success",
-        events: eventsResponse.data.items,
+        events: sortedEvents,
       });
     } catch (error) {
       if (
