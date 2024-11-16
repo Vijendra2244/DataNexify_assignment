@@ -65,7 +65,7 @@ googleOAuthRoutes.get("/google/callback", async (req, res) => {
     await user.save();
     console.log("after saving the user", user);
     res.redirect(
-      `https://data-nexify-frontend.vercel.app/?user=${encodeURIComponent(
+      `https://data-nexify-frontend.vercel.app/dashboard?user=${encodeURIComponent(
         JSON.stringify({
           googleId: user.googleId,
           accessToken: user.accessToken,
