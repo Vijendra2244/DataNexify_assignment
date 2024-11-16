@@ -11,6 +11,7 @@ googleOAuthRoutes.get("/google", (req, res) => {
   try {
     const url = OAUTHCLIENT.generateAuthUrl({
       access_type: "offline",
+      prompt: "consent",
       scope: [
         "https://www.googleapis.com/auth/calendar.events",
         "https://www.googleapis.com/auth/userinfo.profile",
@@ -47,20 +48,26 @@ googleOAuthRoutes.get("/google/callback", async (req, res) => {
     });
 
     console.log(user, "user");
-
+    console.log(tokens.access_token, "access");
+    console.log(tokens.refresh_token, "refresh");
     if (!user) {
       user = new User({
         googleId: data.id,
         accessToken: tokens.access_token,
         refreshToken: tokens.refresh_token,
       });
-      await user.save();
+    } else {
+      user.accessToken = tokens.access_token;
+      if (tokens.refresh_token) {
+        user.refreshToken = tokens.refresh_token;
+      }
     }
+    await user.save();
     console.log("after saving the user", user);
-    res.redirect("https://datanexify-assignment.onrender.com/");
+    res.redirect("http://localhost:5173/dashboard");
   } catch (error) {
     console.error("Authentication error:", error.response?.data || error);
-    console.log(error.response?.data || error.message)
+    console.log(error.response?.data || error.message);
     res.status(500).send({
       msg: "Fail",
       data: "Authetication failed via Google Oauth2",

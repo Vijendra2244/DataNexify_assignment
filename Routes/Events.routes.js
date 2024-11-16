@@ -52,7 +52,6 @@ googleEventsRoutes.post("/calendar/create", async (req, res) => {
   }
 });
 
-
 googleEventsRoutes.get("/users/get", async (req, res) => {
   try {
     const { googleId } = req.query;
@@ -64,7 +63,6 @@ googleEventsRoutes.get("/users/get", async (req, res) => {
       });
     }
 
-    // Find the user by Google ID
     const user = await User.findOne({ googleId });
     if (!user) {
       return res.status(404).send({
@@ -73,7 +71,6 @@ googleEventsRoutes.get("/users/get", async (req, res) => {
       });
     }
 
-    // Set the OAuth client credentials
     OAUTHCLIENT.setCredentials({
       access_token: user.accessToken,
       refresh_token: user.refreshToken,
@@ -81,29 +78,70 @@ googleEventsRoutes.get("/users/get", async (req, res) => {
 
     const calendar = google.calendar({ version: "v3", auth: OAUTHCLIENT });
 
-    // Fetch events from the Google Calendar API
-    const eventsResponse = await calendar.events.list({
-      calendarId: "primary",
-      maxResults: 10, // Fetch a limited number of events; adjust as needed
-      orderBy: "startTime",
-      singleEvents: true, // Expand recurring events into separate instances
-    });
+    try {
+      const eventsResponse = await calendar.events.list({
+        calendarId: "primary",
+        maxResults: 10,
+        orderBy: "startTime",
+        singleEvents: true,
+      });
 
-    // Send the events data
-    res.status(200).send({
-      msg: "Success",
-      events: eventsResponse.data.items,
-    });
+      return res.status(200).send({
+        msg: "Success",
+        events: eventsResponse.data.items,
+      });
+    } catch (error) {
+      if (
+        error.response?.data?.error === "invalid_grant" ||
+        error.response?.data?.error === "authError" ||
+        error.response?.status === 401
+      ) {
+        console.log("Access token expired. Attempting to refresh...");
+
+        const { credentials } = await OAUTHCLIENT.refreshAccessToken();
+        user.accessToken = credentials.access_token;
+
+        await user.save();
+
+        console.log("Access token refreshed. Retrying event fetch...");
+
+        OAUTHCLIENT.setCredentials({
+          access_token: user.accessToken,
+          refresh_token: user.refreshToken,
+        });
+
+        const retryEventsResponse = await calendar.events.list({
+          calendarId: "primary",
+          maxResults: 10,
+          orderBy: "startTime",
+          singleEvents: true,
+        });
+
+        return res.status(200).send({
+          msg: "Success",
+          events: retryEventsResponse.data.items,
+        });
+      } else {
+        console.error(
+          "Error fetching events:",
+          error.response?.data || error.message
+        );
+        return res.status(500).send({
+          msg: "Fail",
+          data: "Failed to fetch events",
+          error: error.response?.data || error.message,
+        });
+      }
+    }
   } catch (error) {
-    console.error("Error fetching events:", error.response?.data || error.message);
+    console.error("Error:", error.response?.data || error.message);
     res.status(500).send({
       msg: "Fail",
-      data: "Failed to fetch events",
+      data: "An unexpected error occurred",
       error: error.response?.data || error.message,
     });
   }
 });
-
 
 module.exports = {
   googleEventsRoutes,
