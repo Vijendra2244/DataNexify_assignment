@@ -83,6 +83,44 @@ googleOAuthRoutes.get("/google/callback", async (req, res) => {
   }
 });
 
+// Logout route for google
+
+googleOAuthRoutes.post("/google/logout", async (req, res) => {
+  try {
+    const { googleId } = req.body;
+
+    if (!googleId) {
+      return res.status(400).send({ msg: "Fail", error: "Google ID is required" });
+    }
+
+    const user = await User.findOne({ googleId });
+
+    if (!user) {
+      return res.status(404).send({ msg: "Fail", error: "User not found" });
+    }
+
+    // Revoke the user's access token
+    await OAUTHCLIENT.revokeToken(user.accessToken);
+
+    // Optionally, clear tokens from the database
+    user.accessToken = null;
+    user.refreshToken = null;
+    await user.save();
+
+    // Respond with success
+    res.status(200).send({
+      msg: "Success",
+      data: "User logged out successfully, tokens revoked",
+    });
+  } catch (error) {
+    console.error("Error during logout:", error.message);
+    res.status(500).send({
+      msg: "Fail",
+      error: "Failed to log out the user",
+    });
+  }
+});
+
 module.exports = {
   googleOAuthRoutes,
 };
