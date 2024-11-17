@@ -2,7 +2,11 @@
 
 # **Google Calendar Integration Backend**
 
-# Important point --> I have deployed my backend on Render, a free hosting platform for backend services. Since it's free, the server goes into sleep mode when not in continuous use, which might cause a delay when hitting the API for the first time after inactivity.
+# Important point --> I have deployed my backend on Render, a free hosting platform for backend services. Since it's free, the server goes into sleep mode when not in continuous use, which might cause a delay 
+when hitting the API for the first time after inactivity.
+
+# Important note --> I have created a google Oauth application with the help of google cloud consent screen so this is the test app so if someone wants to use that as an tester first I need to add that user email as an tester if not then it will show the access denied error 
+
 
 # to use this first make a repo clone 
 
