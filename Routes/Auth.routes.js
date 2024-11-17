@@ -98,11 +98,7 @@ googleOAuthRoutes.post("/google/logout", async (req, res) => {
     if (!user) {
       return res.status(404).send({ msg: "Fail", error: "User not found" });
     }
-
-    // Revoke the user's access token
-    await OAUTHCLIENT.revokeToken(user.accessToken);
-
-    // Optionally, clear tokens from the database
+    
     user.accessToken = null;
     user.refreshToken = null;
     await user.save();
