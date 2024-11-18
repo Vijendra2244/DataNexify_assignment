@@ -1,5 +1,7 @@
 # DataNexify_assignment
 
+# Repo link of my frontend code  --> https://github.com/Vijendra2244/DataNexify_Frontend
+
 # **Google Calendar Integration Backend**
 
 # Important point --> I have deployed my backend on Render, a free hosting platform for backend services. Since it's free, the server goes into sleep mode when not in continuous use, which might cause a delay 
